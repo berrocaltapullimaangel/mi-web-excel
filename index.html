@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Base de Datos Web</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <h1>Mis Datos desde Excel</h1>
+    <table id="miTabla">
+        <thead>
+            <tr id="encabezados"></tr>
+        </thead>
+        <tbody id="cuerpoTabla"></tbody>
+    </table>
+
+    <script>
+        // PEGA AQUI TU URL QUE COPIASTE ANTES
+        const url = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSCCB-2DRQja2--29g0aEAMtyd_GRrKgI44fJ08VuKWpHOvlHFTLZaslGJH1IyPw3eA3ERCUzlnIHqksJkQ4ETG08SyjEVQZ-jJokWlrszrMwW8S-kNTrqdWRaGQh6MoQpzHKphABCXEgMruQXmB5SPlpBazd8ME_TOo6yb4zEvQen3eMvT_llajILap1O3hzehVFhLnLjfZrmdHGsQxFtbsm4Nb-ZJixMslBcKbVI3KDrsEd7lEmGe4o3ol5vNekCAGez2_5wgKMIwX2ezL1nendgTdw&lib=M76XVruyECD8O4_VBmiJbgCFMTfYZgARb';
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    // Crear encabezados
+                    const keys = Object.keys(data[0]);
+                    const trHead = document.getElementById('encabezados');
+                    keys.forEach(key => trHead.innerHTML += `<th>${key}</th>`);
+
+                    // Crear filas
+                    const tbody = document.getElementById('cuerpoTabla');
+                    data.forEach(item => {
+                        let fila = '<tr>';
+                        keys.forEach(key => fila += `<td>${item[key]}</td>`);
+                        fila += '</tr>';
+                        tbody.innerHTML += fila;
+                    });
+                }
+            });
+    </script>
+</body>
+</html>
