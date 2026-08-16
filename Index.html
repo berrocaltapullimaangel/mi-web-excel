@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --secondary: #34495e;
+      --accent: #3498db;
+      --bg: #f4f6f7;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      display: none; /* Oculto por defecto, se muestra tras login */
+    }
+    .auth-container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    button:hover { background-color: #2980b9; }
+    
+    /* Dashboard / Filtros Visuales */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .filter-card {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    .filter-card:hover {
+      transform: translateY(-5px);
+      background: var(--accent);
+    }
+    
+    /* Tabla de datos */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: var(--primary);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PANTALLA DE LOGIN / REGISTRO -->
+  <div id="authScreen" class="auth-container">
+    <h2>Sistema Logístico</h2>
+    <input type="text" id="username" placeholder="Usuario">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Ingresar</button>
+    <button onclick="register()" style="background-color: #95a5a6;">Registrarse</button>
+    <p id="authMsg" style="color: red; font-size: 0.9em;"></p>
+  </div>
+
+  <!-- PANEL DE CONTROL (DASHBOARD) -->
+  <div id="appScreen" class="container">
+    <div class="dashboard-header">
+      <h2>Panel de Control</h2>
+      <button onclick="logout()" style="width: auto; background-color: #e74c3c;">Cerrar Sesión</button>
+    </div>
+
+    <!-- Filtros Visuales -->
+    <div class="filters-grid">
+      <div class="filter-card" onclick="loadData('Alta Rotación')">Artículos de Alta Rotación</div>
+      <div class="filter-card" onclick="loadData('Baja Rotación')">Artículos de Baja Rotación</div>
+      <div class="filter-card" onclick="loadData('Movimientos')">Movimientos</div>
+      <div class="filter-card" onclick="loadData('Usuarios')">Usuarios</div>
+      <div class="filter-card" onclick="loadData('Inventario')">Inventario General</div>
+      <div class="filter-card" onclick="loadData('Cíclico')">Inventario Cíclico</div>
+    </div>
+
+    <h3 id="vistaActual">Vista: Inventario General</h3>
+    
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Código Artículo</th>
+            <th>Posiciones</th>
+            <th>Cant/SAP</th>
+            <th>Conteo cíclico</th>
+            <th>Estatus</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody id="dataTableBody">
+          <!-- Los datos se inyectarán aquí mediante JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // ----- FUNCIONES DE AUTENTICACIÓN -----
+    function login() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      document.getElementById('authMsg').innerText = "Validando...";
+      
+      google.script.run.withSuccessHandler(function(response) {
+        if(response.success) {
+          document.getElementById('authScreen').style.display = 'none';
+          document.getElementById('appScreen').style.display = 'block';
+          loadData('Inventario'); // Cargar inventario por defecto al entrar
+        } else {
+          document.getElementById('authMsg').innerText = response.message;
+        }
+      }).loginUser(u, p);
+    }
+
+    function register() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      document.getElementById('authMsg').innerText = "Registrando...";
+      
+      google.script.run.withSuccessHandler(function(response) {
+        document.getElementById('authMsg').innerText = response.message;
+        document.getElementById('authMsg').style.color = "green";
+      }).registerUser(u, p);
+    }
+
+    function logout() {
+      document.getElementById('appScreen').style.display = 'none';
+      document.getElementById('authScreen').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('authMsg').innerText = '';
+    }
+
+    // ----- FUNCIONES DE DATOS -----
+    let inventarioGlobal = [];
+
+    function loadData(filtro) {
+      document.getElementById('vistaActual').innerText = "Vista: " + filtro;
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando datos...</td></tr>";
+
+      google.script.run.withSuccessHandler(function(data) {
+        inventarioGlobal = data;
+        renderTable(filtro);
+      }).getInventoryData();
+    }
+
+    function renderTable(filtro) {
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = '';
+      
+      // Aquí puedes agregar la lógica matemática para filtrar. 
+      // Por ejemplo, si 'Alta Rotación' significa Cant/SAP > 500:
+      let datosFiltrados = inventarioGlobal;
+
+      if(filtro === 'Alta Rotación') {
+        datosFiltrados = inventarioGlobal.filter(row => parseInt(row['Cant/SAP']) > 500);
+      } else if (filtro === 'Baja Rotación') {
+        datosFiltrados = inventarioGlobal.filter(row => parseInt(row['Cant/SAP']) <= 500);
+      } else if (filtro === 'Cíclico') {
+        datosFiltrados = inventarioGlobal.filter(row => row['Conteo cíclico'] !== "");
+      }
+      // 'Inventario', 'Usuarios' y 'Movimientos' requerirían lógica adaptada a las reglas de tu negocio
+
+      if(datosFiltrados.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No hay registros para esta vista.</td></tr>";
+        return;
+      }
+
+      datosFiltrados.forEach(row => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row['Código Artículo'] || ''}</td>
+          <td>${row['Posiciones'] || ''}</td>
+          <td>${row['Cant/SAP'] || ''}</td>
+          <td>${row['Conteo cíclico'] || ''}</td>
+          <td>${row['Estatus'] || ''}</td>
+          <td>${row['Usuario'] || ''}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
