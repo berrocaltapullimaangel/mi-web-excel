@@ -27,7 +27,6 @@
             box-sizing: border-box;
         }
 
-        /* Pantalla de Login */
         #login-container { 
             background: var(--card-bg); 
             padding: 40px; 
@@ -73,7 +72,6 @@
             cursor: pointer; 
         }
 
-        /* Panel Principal */
         #app-container { 
             display: none; 
             width: 100%; 
@@ -154,7 +152,7 @@
             <input type="password" id="pass" placeholder="Contraseña">
         </div>
         <button class="btn" onclick="verificarLogin()">Entrar</button>
-        <p id="errorMsg" style="color:red; font-size:12px; display:none; margin-top: 10px;">Datos incorrectos</p>
+        <p id="errorMsg" style="color:red; font-size:12px; display:none; margin-top: 10px;">Usuario o contraseña incorrectos</p>
     </div>
 
     <!-- PANEL -->
@@ -177,22 +175,21 @@
     </div>
 
     <script>
-        const BASE_URL = 'https://script.google.com/macros/s/AKfycbytcpZYl-P_c2SJZWJ67RMNzpJKK1kUzkz6lHSQfIgnTXsPxXiihvv5qp0d7_y26V6M/exec';
+        // PEGA AQUÍ TU URL DE APPS SCRIPT
+        const BASE_URL = 'https://script.google.com/macros/s/AKfycbxZIqsk7Jgmcnf-v9Sw7CkSf1pC9Fx8mi0dOBNUmFO4l3tD0Aq04gcFyukYS2GCMQ3Q/exec';
 
         function verificarLogin() {
             const uInput = document.getElementById('user').value.trim();
             const pInput = document.getElementById('pass').value.trim();
             const errorMsg = document.getElementById('errorMsg');
             
-            const urlConProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(BASE_URL + '?action=usuarios')}`;
-
-            fetch(urlConProxy)
+            fetch(BASE_URL + '?action=usuarios')
                 .then(res => res.json())
                 .then(usuarios => {
                     const user = usuarios.find(u => u.Usuario === uInput && String(u.Contrasena) === pInput);
                     if (user) {
                         errorMsg.style.display = 'none';
-                        document.body.style.alignItems = 'flex-start'; // Ajusta la página para que baje bien el contenido
+                        document.body.style.alignItems = 'flex-start';
                         document.getElementById('login-container').style.display = 'none';
                         document.getElementById('app-container').style.display = 'block';
                         cargarDatos();
@@ -207,8 +204,7 @@
         }
 
         function cargarDatos() {
-            const urlDatosProxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(BASE_URL)}`;
-            fetch(urlDatosProxy)
+            fetch(BASE_URL)
                 .then(res => res.json())
                 .then(data => {
                     if (data.length > 0) {
