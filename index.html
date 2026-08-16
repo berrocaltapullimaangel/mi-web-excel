@@ -3,97 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Base de Datos en la Web</title>
-    <!-- Importamos una fuente moderna (Inter) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Acceso al Sistema</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
-            padding: 40px 20px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+        /* Pantalla de Login */
+        #login-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
         }
-        h1 {
-            font-size: 24px;
+
+        #login-container h2 {
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
-            color: #0f172a;
-            margin-top: 0;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* Panel Principal (Oculto al inicio) */
+        #app-container {
+            display: none;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            box-sizing: border-box;
+            margin: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
+
+        .search-box {
+            padding: 10px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+            max-width: 300px;
+            outline: none;
+        }
+
         .table-container {
             overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            background-color: #ffffff;
         }
+
         th, td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
         }
+
         th {
             background-color: #f1f5f9;
             font-weight: 600;
             color: #475569;
-            font-size: 14px;
+            font-size: 13px;
         }
+
         td {
             font-size: 14px;
-            color: #64748b;
+            color: var(--text-muted);
         }
-        tr:hover {
-            background-color: #f8fafc;
+
+        .logout-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
+        .logout-btn:hover { background: #fecaca; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>📊 Mis Datos desde Excel</h1>
-        <div class="table-container">
-            <table id="miTabla">
-                <thead>
-                    <tr id="encabezados"></tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-            </table>
+    <!-- LOGIN -->
+    <div id="login-container">
+        <h2>Iniciar Sesión</h2>
+        <div class="input-group">
+            <label>Usuario</label>
+            <input type="text" id="user" placeholder="Ingresa tu usuario">
+        </div>
+        <div class="input-group">
+            <label>Contraseña</label>
+            <input type="password" id="pass" placeholder="Ingresa tu contraseña">
+        </div>
+        <button class="btn" onclick="verificarLogin()">Entrar</button>
+        <div id="errorMsg" class="error-msg">Usuario o contraseña incorrectos</div>
+    </div>
+
+    <!-- PANEL PRINCIPAL -->
+    <div id="app-container">
+        <header>
+            <div>
+                <h1 id="welcomeTitle" style="margin:0; font-size:22px;">📊 Panel</h1>
+                <span id="userRoleBadge" style="font-size: 12px; color: var(--primary); font-weight:600;"></span>
+            </div>
+            <button class="logout-btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </header>
+
+        <div class="card">
+            <div class="controls">
+                <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar..." onkeyup="filtrarTabla()">
+                <span id="totalRegistros" style="align-self: center; font-size: 13px; font-weight: 600; color: var(--text-muted);"></span>
+            </div>
+
+            <div class="table-container">
+                <table id="miTabla">
+                    <thead>
+                        <tr id="encabezados"></tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
-        // Tu URL de Google Apps Script
-        const url = 'https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSCCB-2DRQja2--29g0aEAMtyd_GRrKgI44fJ08VuKWpHOvlHFTLZaslGJH1IyPw3eA3ERCUzlnIHqksJkQ4ETG08SyjEVQZ-jJokWlrszrMwW8S-kNTrqdWRaGQh6MoQpzHKphABCXEgMruQXmB5SPlpBazd8ME_TOo6yb4zEvQen3eMvT_llajILap1O3hzehVFhLnLjfZrmdHGsQxFtbsm4Nb-ZJixMslBcKbVI3KDrsEd7lEmGe4o3ol5vNekCAGez2_5wgKMIwX2ezL1nendgTdw&lib=M76XVruyECD8O4_VBmiJbgCFMTfYZgARb';
+        // PEGA AQUÍ TU URL DE GOOGLE APPS SCRIPT
+        const BASE_URL = 'TU_URL_DE_APPS_SCRIPT_AQUI';
 
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.length > 0) {
-                    // Crear encabezados
-                    const keys = Object.keys(data[0]);
-                    const trHead = document.getElementById('encabezados');
-                    keys.forEach(key => trHead.innerHTML += `<th>${key}</th>`);
+        let datosGlobales = [];
+        let keysGlobales = [];
 
-                    // Crear filas
-                    const tbody = document.getElementById('cuerpoTabla');
-                    data.forEach(item => {
-                        let fila = '<tr>';
-                        keys.forEach(key => fila += `<td>${item[key]}</td>`);
-                        fila += '</tr>';
-                        tbody.innerHTML += fila;
-                    });
-                }
-            })
-            .catch(error => console.error('Error al cargar los datos:', error));
+        function verificarLogin() {
+            const uInput = document.getElementById('user').value.trim();
+            const pInput = document.getElementById('pass').value.trim();
+            const errorDiv = document.getElementById('errorMsg');
+
+            // Llamamos a la hoja de usuarios
+            fetch(BASE_URL + '?action=usuarios')
+                .then(res => res.json())
+                .then(usuarios => {
+                    const encontrado = usuarios.find(u => u.Usuario === uInput && String(u.Contrasena) === pInput);
+                    
+                    if (encontrado) {
+                        errorDiv.style.display = 'none';
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('app-container').style.display = 'block';
+                        
+                        document.getElementById('welcomeTitle').innerText = `Bienvenido, ${encontrado.Usuario}`;
+                        document.getElementById('userRoleBadge').innerText = `Rol: ${encontrado.Rol.toUpperCase()}`;
+
+                        // Si es admin o usuario normal, cargamos los datos de la base principal
+                        cargarDatosBase();
+                    } else {
+                        errorDiv.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error al conectar con el servidor de usuarios.");
+                });
+        }
+
+        function cargarDatosBase() {
+            fetch(BASE_URL)
+                .then(res => res.json())
+                .then(data => {
+                    datosGlobales = data;
+                    if (data.length > 0) {
+                        keysGlobales = Object.keys(data[0]);
+                        document.getElementById('totalRegistros').innerText = `${data.length} registros`;
+
+                        const trHead = document.getElementById('encabezados');
+                        trHead.innerHTML = '';
+                        keysGlobales.forEach(key => {
+                            trHead.innerHTML += `<th>${key}</th>`;
+                        });
+
+                        mostrarTabla(data);
+                    }
+                });
+        }
+
+        function mostrarTabla(data) {
+            const tbody = document.getElementById('cuerpoTabla');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                let fila = '<tr>';
+                keysGlobales.forEach(key => {
+                    fila += `<td>${item[key] !== undefined ? item[key] : ''}</td>`;
+                });
+                fila += '</tr>';
+                tbody.innerHTML += fila;
+            });
+        }
+
+        function filtrarTabla() {
+            const texto = document.getElementById('buscador').value.toLowerCase();
+            const resultados = datosGlobales.filter(item => {
+                return keysGlobales.some(key => String(item[key]).toLowerCase().includes(texto));
+            });
+            mostrarTabla(resultados);
+        }
+
+        function cerrarSesion() {
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+            document.getElementById('app-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        }
     </script>
 </body>
 </html>
