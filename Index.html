@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Logístico</title>
   <style>
     :root {
       --primary: #2c3e50;
@@ -26,7 +28,7 @@
       border-radius: 10px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       padding: 20px;
-      display: none; /* Oculto por defecto, se muestra tras login */
+      display: none;
     }
     .auth-container {
       background: white;
@@ -58,7 +60,6 @@
     }
     button:hover { background-color: #2980b9; }
     
-    /* Dashboard / Filtros Visuales */
     .dashboard-header {
       display: flex;
       justify-content: space-between;
@@ -88,8 +89,6 @@
       transform: translateY(-5px);
       background: var(--accent);
     }
-    
-    /* Tabla de datos */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -150,28 +149,35 @@
           </tr>
         </thead>
         <tbody id="dataTableBody">
-          <!-- Los datos se inyectarán aquí mediante JS -->
+          <!-- Datos inyectados por JS -->
         </tbody>
       </table>
     </div>
   </div>
 
   <script>
-    // ----- FUNCIONES DE AUTENTICACIÓN -----
+    // PEGA AQUÍ LA URL DE TU WEB APP DE GOOGLE APPS SCRIPT
+    const API_URL = "https://script.google.com/macros/s/AKfycbycMvbzuovPXUa94-vUaJRgAW5pXhFBI6cjn7x8cyUNHOAMKIucSCgWXxAyUL3ItmrK/exec";
+
     function login() {
       const u = document.getElementById('username').value;
       const p = document.getElementById('password').value;
       document.getElementById('authMsg').innerText = "Validando...";
       
-      google.script.run.withSuccessHandler(function(response) {
-        if(response.success) {
-          document.getElementById('authScreen').style.display = 'none';
-          document.getElementById('appScreen').style.display = 'block';
-          loadData('Inventario'); // Cargar inventario por defecto al entrar
-        } else {
-          document.getElementById('authMsg').innerText = response.message;
-        }
-      }).loginUser(u, p);
+      fetch(`${API_URL}?action=login&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`)
+        .then(res => res.json())
+        .then(response => {
+          if(response.success) {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            loadData('Inventario');
+          } else {
+            document.getElementById('authMsg').innerText = response.message;
+          }
+        })
+        .catch(err => {
+          document.getElementById('authMsg').innerText = "Error de conexión con el servidor.";
+        });
     }
 
     function register() {
@@ -179,10 +185,15 @@
       const p = document.getElementById('password').value;
       document.getElementById('authMsg').innerText = "Registrando...";
       
-      google.script.run.withSuccessHandler(function(response) {
-        document.getElementById('authMsg').innerText = response.message;
-        document.getElementById('authMsg').style.color = "green";
-      }).registerUser(u, p);
+      fetch(`${API_URL}?action=register&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`)
+        .then(res => res.json())
+        .then(response => {
+          document.getElementById('authMsg').innerText = response.message;
+          document.getElementById('authMsg').style.color = "green";
+        })
+        .catch(err => {
+          document.getElementById('authMsg').innerText = "Error al registrar.";
+        });
     }
 
     function logout() {
@@ -193,7 +204,6 @@
       document.getElementById('authMsg').innerText = '';
     }
 
-    // ----- FUNCIONES DE DATOS -----
     let inventarioGlobal = [];
 
     function loadData(filtro) {
@@ -201,18 +211,21 @@
       const tbody = document.getElementById('dataTableBody');
       tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando datos...</td></tr>";
 
-      google.script.run.withSuccessHandler(function(data) {
-        inventarioGlobal = data;
-        renderTable(filtro);
-      }).getInventoryData();
+      fetch(`${API_URL}?action=getInventory`)
+        .then(res => res.json())
+        .then(data => {
+          inventarioGlobal = data;
+          renderTable(filtro);
+        })
+        .catch(err => {
+          tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Error al cargar los datos.</td></tr>";
+        });
     }
 
     function renderTable(filtro) {
       const tbody = document.getElementById('dataTableBody');
       tbody.innerHTML = '';
       
-      // Aquí puedes agregar la lógica matemática para filtrar. 
-      // Por ejemplo, si 'Alta Rotación' significa Cant/SAP > 500:
       let datosFiltrados = inventarioGlobal;
 
       if(filtro === 'Alta Rotación') {
@@ -222,7 +235,6 @@
       } else if (filtro === 'Cíclico') {
         datosFiltrados = inventarioGlobal.filter(row => row['Conteo cíclico'] !== "");
       }
-      // 'Inventario', 'Usuarios' y 'Movimientos' requerirían lógica adaptada a las reglas de tu negocio
 
       if(datosFiltrados.length === 0) {
         tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No hay registros para esta vista.</td></tr>";
